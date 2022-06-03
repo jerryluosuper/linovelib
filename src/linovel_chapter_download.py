@@ -1,20 +1,21 @@
-import requests
-import time
-from bs4 import BeautifulSoup
 import re
+import time
+
 import fake_useragent
+import requests
+from bs4 import BeautifulSoup
 
-web = "https://www.linovelib.com/novel/2890/163991.html"
+web = "https://www.linovelib.com/novel/2547/161282.html"
 
-def get_title(web):
+def get_title_chapter(web):
     content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().chrome})
     soup = BeautifulSoup(content.text, "html.parser")
     title = str(soup.select("#mlfy_main_text > h1"))
     re_title = re.compile(r'<h1>(.*?)</h1>')
     title = re_title.findall(title)
-    return title
+    return title[0]
 
-def get_chapter_one(web):
+def get_chapter_one_chapter(web):
     content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().chrome})
     soup = BeautifulSoup(content.text, "html.parser")
     soup_text = soup.findAll('div', class_="read-content")
@@ -22,15 +23,15 @@ def get_chapter_one(web):
 
 def get_chapter_all(web,sleep_time=1):
     soup_list = [ ]
-    soup_list.append(get_chapter_one(web))
+    soup_list.append(get_chapter_one_chapter(web))
     web_original = web[0:(len(web)-5)]
     text_original = soup_list[0][0].get_text()[0:10]
     i=2
     while True:
         time.sleep(sleep_time)
         web = web_original + '_' + str(i) + '.html'
-        # print(web)
-        chapter_now = get_chapter_one(web)
+        # print_chapter(web)
+        chapter_now = get_chapter_one_chapter(web)
         if len(chapter_now) == 0 or chapter_now[0].get_text() == "\n\n":
             # print("Error: No chapter now")
             break
@@ -42,13 +43,13 @@ def get_chapter_all(web,sleep_time=1):
     # print(soup_list)
     return soup_list
 
-def get_text(soup_list):
+def get_text(soup_list,separator_now):
     text=''
     for i in soup_list:
         if len(i) != 0:
-            text += i[0].get_text()
+            text += i[0].get_text(separator=separator_now)
     text = text.replace('（本章未完）', '')
-    title = get_title(web)[0]
+    title = get_title_chapter(web)
     text = title + "\n" + text
     return text
 
@@ -59,8 +60,8 @@ def write_txt(text,title):
 
 def get_chapter_all_txt(web):
     soup_list = get_chapter_all(web)
-    title = get_title(web)[0]
-    text = get_text(soup_list)
+    title = get_title_chapter(web)
+    text = get_text(soup_list,"\n")
     write_txt(text,title)
 
 get_chapter_all_txt(web)
