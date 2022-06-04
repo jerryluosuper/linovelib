@@ -51,7 +51,7 @@ def get_text(soup_list,separator_now):
     text = title + "\n" + text
     return text
 
-def write_txt(text,title):
+def write_txt_all(text,title):
     f = open(title+'.txt','w',encoding="utf-8")
     f.write(text)
     f.close()
@@ -60,7 +60,7 @@ def get_chapter_all_txt(web):
     soup_list = get_chapter_all(web)
     title = get_title_chapter(web)
     text = get_text(soup_list,"\n")
-    write_txt(text,title)
+    write_txt_all(text,title)
 
 get_chapter_all_txt(web)
 
