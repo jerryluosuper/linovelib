@@ -1,9 +1,11 @@
 if __name__ == '__main__':
     import fire
     from linovelib_download import *
+    from linovelib_all import *
 else:
     import fire
     from .linovelib_download import *
+    from .linovelib_all import *
 
 class Lensi(object):
     def __init__(self) -> None:

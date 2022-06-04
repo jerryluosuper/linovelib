@@ -1,4 +1,7 @@
-from linovelib_all import *
+if __name__ == '__main__':
+    from linovelib_all import *
+else:
+    from .linovelib_all import *
 
 def linovelib_download(id,wait_time=1,split_char='\n'):
     novel_catalog = "https://www.linovelib.com/novel/" + id + "/catalog"
