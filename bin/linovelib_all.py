@@ -6,13 +6,13 @@ import requests
 from bs4 import BeautifulSoup
 
 def get_title_chapter(web):
-    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().chrome})
+    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
     soup = BeautifulSoup(content.text, "html.parser")
     title = soup.select_one("#mlfy_main_text > h1")
     return title.text
 
 def get_chapter_one_chapter(web):
-    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().chrome})
+    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
     soup = BeautifulSoup(content.text, "html.parser")
     soup_text = soup.findAll('div', class_="read-content")
     print("Getting From:",web)
@@ -65,13 +65,13 @@ def get_chapter_all_txt(web,wait_time=0.5,split_char='\n'):
     write_txt_all(text,title)
 
 def get_title_book(web):
-    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().chrome})
+    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
     soup = BeautifulSoup(content.text, "html.parser")
     title = soup.select_one("html body div.wrap div.container div.book-meta h1")
     return title.text
 
 def get_chapter_list(web):
-    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().chrome})
+    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
     soup = BeautifulSoup(content.text, "html.parser")
 
     chapter = soup.find_all("li",class_="col-4")
