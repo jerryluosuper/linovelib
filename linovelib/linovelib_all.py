@@ -1,3 +1,4 @@
+import random
 import re
 import time
 
@@ -55,16 +56,16 @@ def get_text(soup_list,separator_now):
     text = text.replace('（本章未完）', '')
     return text
 
-def write_txt_all(text,title):
-    f = open(title+'.txt','w',encoding="utf-8")
+def write_txt_all(text,title,path='./'):
+    f = open(path + "/" + title +'.txt','w',encoding="utf-8")
     f.write(text)
     f.close()
 
-def get_chapter_all_txt(web,wait_time=0.5,split_char='\n'):
+def get_chapter_all_txt(web,wait_time=0.5,split_char='\n',path='./'):
     soup_list = get_chapter_all(web,wait_time)
     title = get_title_chapter(web)
     text = get_text(soup_list,split_char)
-    write_txt_all(text,title)
+    write_txt_all(text,title,path)
 
 def get_title_book(web):
     content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
@@ -102,7 +103,7 @@ def get_chapter_list(web):
             chapter_list_fix.append([i])
     return chapter_list_fix
 
-def linovelib_download(id,wait_time=1,split_char='\n'):
+def linovelib_download(id,wait_time=1,split_char='\n',path='./'):
     novel_catalog = "https://www.linovelib.com/novel/" + id + "/catalog"
     catalog_list = get_chapter_list(novel_catalog)
     book_title = get_title_book(novel_catalog)
@@ -127,11 +128,15 @@ def linovelib_download(id,wait_time=1,split_char='\n'):
             break
         except:
             print("Error from",i[0])
-    write_txt = write_txt.replace("\n\n\n","\n\n")
-    write_txt_all(write_txt,book_title)
+    if split_char == "\n\n":
+        write_txt = write_txt.replace("\n\n\n","\n\n")
+    elif split_char == "\n":
+        write_txt = write_txt.replace("\n\n","\n")
+    write_txt_all(write_txt,book_title,path)
+    print(book_title,"is over.")
     print("Downloading",book_title,"is over.")
 
-def linovelib_search(keyword):
+def linovelib_search(keyword,num=5):
     keyword = quote(keyword)
     web = "https://www.linovelib.com/S0/?searchkey=" + keyword + "&searchtype=all"
     content = requests.get(web, headers={'User-Agent': 'Mozilla/5.0 (Linux; U; Android 11; zh-cn; Redmi K30 Pro Build/RKQ1.200826.002) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/11.6 Mobile Safari/537.36 COVC/045635'})
@@ -140,7 +145,7 @@ def linovelib_search(keyword):
     desc_list = soup.find_all("p", class_="book-desc")
     author_list = soup.find_all("span", class_="book-author")
     link_list = soup.find_all("a", class_="book-layout",href=True)
-    for i in range(len(title_list)):
+    for i in range(num):
         title = title_list[i].get_text()
         desc = desc_list[i].get_text()
         author = author_list[i].get_text()
@@ -152,6 +157,7 @@ def linovelib_search(keyword):
         print("下载：","linovelib download",link.replace("/novel/","").replace(".html",""))
         print("--------------")
     print("搜索结果:",len(title_list),"本")
+    return link_list[0]["href"].replace("/novel/","").replace(".html","")
 
 def change_to_id(id):
     if type(id) == int:
@@ -163,6 +169,8 @@ def change_to_id(id):
             id = id.split('/')[-2]
         elif id.count('/') == 4:
             id = id.split('/')[-1].strip(".html")
+    else:
+        id = linovelib_search(id)
     return id
 
 def linovelib_info(id):
@@ -188,3 +196,19 @@ def linovelib_show(id):
             print(i[0]+":\n")
         else:
             print(i[0],":",i[1])
+
+def linovelib_rec(type='monthvisit',page=1):
+    web = "https://www.linovelib.com/top/" + type + "/" +str(page)+ ".html"
+    content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
+    soup = BeautifulSoup(content.text, "html.parser")
+    title_list = soup.find_all("div",class_="rank_d_b_name")
+    cate_list = soup.find_all("div",class_="rank_d_b_cate")
+    info_list = soup.find_all("div",class_="rank_d_b_info")
+    last_list = soup.find_all("div",class_="rank_d_b_last")
+    i = random.randint(0,len(title_list)-1)
+    title = title_list[i].get_text()
+    cate = cate_list[i].get_text()
+    info = info_list[i].get_text()
+    last = last_list[i].get_text()
+    url = "https://www.linovelib.com" + title_list[i].find("a").get("href")
+    print(title.strip()+"\n"+cate+"\n"+info+"\n"+last.replace("最新章节","最新章节: ")+"\n"+"网址: "+url+"\n\n"+"下载：linovelib download "+url.replace("https://www.linovelib.com/novel/","").replace(".html","")+"\n")

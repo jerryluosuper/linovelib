@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(  
     name = 'linovelib',  
-    version = '0.0.1', 
+    version = '0.0.2', 
     description = 'Download novel from linovelib',  
     license = 'MIT License',  
     install_requires = ["bs4","fire","requests","fake_useragent"], 
