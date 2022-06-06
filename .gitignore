@@ -1,6 +1,8 @@
 #test:download txt
 *.txt
 *.jpg
+*.epub
+赤村崎葵子的分析是瞎扯淡.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

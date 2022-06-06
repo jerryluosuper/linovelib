@@ -3,11 +3,12 @@ import random
 import re
 import time
 
+import pypandoc
+
 import fake_useragent
+from urllib.parse import quote
 import requests
 from bs4 import BeautifulSoup
-
-from urllib.parse import quote
 
 def get_title_chapter(web):
     content = requests.get(web, headers={'User-Agent': fake_useragent.UserAgent().random})
@@ -121,36 +122,45 @@ def get_chapter_list(web):
             chapter_list_fix.append([i])
     return chapter_list_fix
 
-def linovelib_download(id,wait_time=1,split_char='\n',path='./',type='txt',enable_pic_download=True):
+def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt',enable_pic_download=True,begin_chapter=0,end_chapter=0):
     novel_catalog = "https://www.linovelib.com/novel/" + id + "/catalog"
     catalog_list = get_chapter_list(novel_catalog)
     book_title = get_title_book(novel_catalog)
     print("Downloading",book_title)
+    write_txt = ""
     if type == 'txt':
         write_txt = book_title + "\n\n"
     elif type == 'md':
         write_txt = "# " + book_title + "\n\n"
-    
     chapter_now = ""
     dir_now = path
-    for i in catalog_list:
-        print("Downloading",i[0])
-        if len(i) == 1:
+    if begin_chapter == end_chapter:
+        range_time = [0,len(catalog_list)]
+    else:
+        range_time = [begin_chapter,end_chapter]
+    for i in range(range_time[0],range_time[1]):
+        print("Downloading",catalog_list[i][0])
+        if len(catalog_list[i]) == 1:
             dir_now = path + "/" +book_title + "/" + chapter_now
             os.makedirs(dir_now,exist_ok=True)
             if type == 'txt':
-                write_txt += i[0] + "\n\n"
+                write_txt += catalog_list[i][0] + "\n\n"
             elif type == 'md':
-                write_txt += "## " + i[0] + "\n\n"
+                write_txt += "## " + catalog_list[i][0] + "\n\n"
         else:
-            if i[1] == None:
-                write_txt += i[0] +"\n"+ "本章获取失败" +"\n\n"
-            elif i[0] == "插图":
+            if catalog_list[i][1] == None:
+                write_txt += catalog_list[i][0] +"\n"+ "本章获取失败" +"\n\n"
+            elif catalog_list[i][0] == "插图":
                 if enable_pic_download:
-                    write_txt += "### " + i[0] + "\n\n"
+                    write_txt += "### " + catalog_list[i][0] + "\n\n"
                     os.chdir(dir_now)
-                    print("Start getting picture from:",i[1])
-                    pic_list = get_chapter_pic(i[1],wait_time,enable_pic_download)
+                    print("Start getting picture from:",catalog_list[i][1])
+                    try:
+                        pic_list = get_chapter_pic(catalog_list[i][1],wait_time,enable_pic_download)
+                    except ConnectionResetError:
+                        break
+                    except:
+                        pass
                     if type == 'txt':
                         for j in pic_list:
                             write_txt += j + "\n\n"
@@ -159,18 +169,28 @@ def linovelib_download(id,wait_time=1,split_char='\n',path='./',type='txt',enabl
                             write_txt += "![](" + dir_now + "/"+j.split('/')[-1] + ")" + "\n"
                 else:
                     if type == 'md':
-                        pic_list = get_chapter_pic(i[1],wait_time,enable_pic_download)
+                        try:
+                            pic_list = get_chapter_pic(catalog_list[i][1],wait_time,enable_pic_download)
+                        except ConnectionResetError:
+                            break
+                        except:
+                            pass
                         for j in pic_list:
                             write_txt +=  j + "\n"
             else:
-                print("Start getting from:",i[1])
-                soup_list = get_chapter_all(i[1],wait_time)
+                print("Start getting from:",catalog_list[i][1])
+                try:
+                    soup_list = get_chapter_all(catalog_list[i][1],wait_time)
+                except ConnectionResetError:
+                    break
+                except:
+                    pass
                 chapter_text = get_text(soup_list,split_char)
                 if type == 'txt':
-                    write_txt += i[0] + "\n\n" + chapter_text + "\n\n"
+                    write_txt += catalog_list[i][0] + "\n\n" + chapter_text + "\n\n"
                 elif type == 'md':
-                    write_txt += "### " + i[0] + "\n\n" + chapter_text + "\n\n"
-            print(i[0],"is over.")
+                    write_txt += "### " + catalog_list[i][0] + "\n\n" + chapter_text + "\n\n"
+            print(catalog_list[i][0],"is over.")
         
     if type == 'txt':
         pass
@@ -195,6 +215,10 @@ def linovelib_download(id,wait_time=1,split_char='\n',path='./',type='txt',enabl
     os.chdir(path)
 
     write_txt_all(write_txt,book_title,path,type)
+
+    if type !="md" or type != "txt":
+        pypandoc.convert_file(book_title + '.md', type, format='markdown', outputfile= book_title + '.' + type)
+    
     print(book_title,"is over.")
     print("Downloading",book_title,"is over.")
 
@@ -254,11 +278,11 @@ def linovelib_show(id):
     catalog_list = get_chapter_list(novel_catalog)
     book_title = get_title_book(novel_catalog)
     print("书名：",book_title)
-    for i in catalog_list:
-        if len(i) == 1:
-            print(i[0]+":\n")
+    for i in range(len(catalog_list)):
+        if len(catalog_list[i]) == 1:
+            print(catalog_list[i][0]+":\n")
         else:
-            print(i[0],":",i[1])
+            print(catalog_list[i][0],":",catalog_list[i][1])
     return catalog_list
 
 def linovelib_rec(type='monthvisit',page=1):

@@ -8,22 +8,22 @@ else:
 class Lensi(object):
     def __init__(self) -> None:
         pass
-    def download(self,id,type_book="txt",path=os.getcwd(),wait_time=0.5,split_char='\n',enable_pic_download=True):
+    def download(self,id,type_book="txt",begin_chapter=0,end_chapter=0,path=os.getcwd(),wait_time=0.5,split_char='\n',enable_pic_download=True):
         if type(id) == int:
             id = str(id)
-            linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download)
+            linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download,begin_chapter=0,end_chapter=0)
         elif id.find('https://www.linovelib.com/novel/') != -1:
             if id.find('catalog') != -1:
                 id = id.split('/')[-2]
-                linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download)
+                linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download,begin_chapter=0,end_chapter=0)
             elif id.count('/') == 5:
                 get_chapter_all_txt(id,wait_time,split_char,path)
             elif id.count('/') == 4:
                 id = id.split('/')[-1].strip(".html")
-                linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download)
+                linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download,begin_chapter=0,end_chapter=0)
         else:
             id = change_to_id(id)
-            linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download)
+            linovelib_download(id,wait_time,split_char,path,type_book,enable_pic_download,begin_chapter=0,end_chapter=0)
     def search(self,keyword,num=5):
         linovelib_search(keyword,num)
     def show(self,id):
@@ -44,5 +44,3 @@ class Lensi(object):
 
 def main():
     fire.Fire(Lensi)
-
-main()
