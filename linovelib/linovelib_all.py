@@ -218,7 +218,7 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
 
     write_txt_all(write_txt,book_title,path,type)
 
-    if type !="md" or type != "txt":
+    if type !="md" and type != "txt":
         pypandoc.convert_file(book_title + '.md', type, format='markdown', outputfile= book_title + '.' + type)
     
     print(book_title,"is over.")
@@ -257,8 +257,9 @@ def linovelib_search_simple(keyword):
 
 def change_to_id(id):
     if type(id) == int:
-            id = str(id)
-    elif id.find('https://www.linovelib.com/novel/') != -1:
+        id = str(id)
+        return id
+    if id.find('https://www.linovelib.com/novel/') != -1:
         if id.find('catalog') != -1:
             id = id.split('/')[-2]
         elif id.count('/') == 5:
