@@ -126,6 +126,11 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
     novel_catalog = "https://www.linovelib.com/novel/" + id + "/catalog"
     catalog_list = get_chapter_list(novel_catalog)
     book_title = get_title_book(novel_catalog)
+    if begin_chapter >= end_chapter:
+        range_time = [0,len(catalog_list)]
+    else:
+        range_time = [begin_chapter,end_chapter]
+        book_title = book_title + str(begin_chapter) + "-" + str(end_chapter)
     print("Downloading",book_title)
     write_txt = ""
     if type == 'txt':
@@ -134,10 +139,6 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
         write_txt = "# " + book_title + "\n\n"
     chapter_now = ""
     dir_now = path
-    if begin_chapter == end_chapter:
-        range_time = [0,len(catalog_list)]
-    else:
-        range_time = [begin_chapter,end_chapter]
     for i in range(range_time[0],range_time[1]):
         print("Downloading",catalog_list[i][0])
         if len(catalog_list[i]) == 1:
@@ -280,9 +281,9 @@ def linovelib_show(id):
     print("书名：",book_title)
     for i in range(len(catalog_list)):
         if len(catalog_list[i]) == 1:
-            print(catalog_list[i][0]+":\n")
+            print(i,":",catalog_list[i][0]+":\n")
         else:
-            print(catalog_list[i][0],":",catalog_list[i][1])
+            print(i,":",catalog_list[i][0],":",catalog_list[i][1])
     return catalog_list
 
 def linovelib_rec(type='monthvisit',page=1):

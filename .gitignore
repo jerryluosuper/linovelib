@@ -2,6 +2,7 @@
 *.txt
 *.jpg
 *.epub
+*.pdf
 赤村崎葵子的分析是瞎扯淡.md
 
 # Byte-compiled / optimized / DLL files
@@ -133,3 +134,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+果然我的青春恋爱喜剧搞错了.md
+果然我的青春恋爱喜剧搞错了.pdf
