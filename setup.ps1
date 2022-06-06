@@ -1,7 +1,6 @@
 #pip uninstall linovelib
 #Remove-item dist
 #python setup.py sdist bdist_wheel
-#cd  .\dist\
-#pip install
+#pip install .\dist\
 #cd ..
 #twine upload dist/*

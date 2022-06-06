@@ -71,7 +71,7 @@ def get_text(soup_list,separator_now):
                 elif j.find("div") != -1:
                     pass
                 else:
-                    text += text_re.findall(j)[0] + separator_now
+                    text += text_re.findall(j)[0] + "\n" +separator_now
     text = text.replace('（本章未完）', '')
     return text
 
@@ -130,20 +130,18 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
         range_time = [0,len(catalog_list)]
     else:
         range_time = [begin_chapter,end_chapter]
-        book_title = book_title + str(begin_chapter) + "-" + str(end_chapter)
+        book_title = book_title + " " + str(begin_chapter) + "-" + str(end_chapter)
     print("Downloading",book_title)
     write_txt = ""
     if type == 'txt':
         write_txt = book_title + "\n\n"
     elif type == 'md':
         write_txt = "# " + book_title + "\n\n"
-    chapter_now = ""
-    dir_now = path
+    dir_now = path + "/" +book_title + "/"
+    os.makedirs(dir_now,exist_ok=True)
     for i in range(range_time[0],range_time[1]):
         print("Downloading",catalog_list[i][0])
         if len(catalog_list[i]) == 1:
-            dir_now = path + "/" +book_title + "/" + chapter_now
-            os.makedirs(dir_now,exist_ok=True)
             if type == 'txt':
                 write_txt += catalog_list[i][0] + "\n\n"
             elif type == 'md':
@@ -161,6 +159,7 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
                     except ConnectionResetError:
                         break
                     except:
+                        pic_list = []
                         pass
                     if type == 'txt':
                         for j in pic_list:
@@ -175,6 +174,7 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
                         except ConnectionResetError:
                             break
                         except:
+                            pic_list = []
                             pass
                         for j in pic_list:
                             write_txt +=  j + "\n"
@@ -185,6 +185,7 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
                 except ConnectionResetError:
                     break
                 except:
+                    soup_list = []
                     pass
                 chapter_text = get_text(soup_list,split_char)
                 if type == 'txt':
@@ -196,23 +197,23 @@ def linovelib_download(id,wait_time=1,split_char='\n',path=os.getcwd(),type='txt
     if type == 'txt':
         pass
     elif type == 'md':
+        pic_name_list = [".jpg",".jpeg",".png"]
         if enable_pic_download:
-            pic_url_re = re.compile(r'https:(.*?).jpg')
-            pic_url_list = pic_url_re.findall(write_txt)
-            pic_real_list = []
-            for i in range(len(pic_url_list)):
-                pic_url_list[i] = "https:" + pic_url_list[i] + ".jpg"
-                pic_real = "![](" + dir_now + "\\" + pic_url_list[i].split('/')[-1] + ")" + "\n"
-                pic_real_list.append(pic_real)
-            for i in range(len(pic_url_list)):
-                write_txt = write_txt.replace(pic_url_list[i],pic_real_list[i])
+            for k in pic_name_list:
+                pic_url_re = re.compile(r'https:(.*?)'+k)
+                pic_url_list = pic_url_re.findall(write_txt)
+                pic_real_list = []
+                for i in range(len(pic_url_list)):
+                    pic_url_list[i] = "https:" + pic_url_list[i] + k
+                    pic_real = "![](" + dir_now + "\\" + pic_url_list[i].split('/')[-1] + ")" + "\n"
+                    pic_real_list.append(pic_real)
+                for i in range(len(pic_url_list)):
+                    write_txt = write_txt.replace(pic_url_list[i],pic_real_list[i])
         else:
-            write_txt = write_txt.replace("https:","![](https:").replace(".jpg",".jpg)")
-    
-    if split_char == "\n\n":
+            for k in pic_name_list:
+                write_txt = write_txt.replace("https:","![](https:").replace(k,k+")")
+    if split_char == "\n":
         write_txt = write_txt.replace("\n\n\n","\n\n")
-    elif split_char == "\n":
-        write_txt = write_txt.replace("\n\n","\n")
     os.chdir(path)
 
     write_txt_all(write_txt,book_title,path,type)
@@ -232,7 +233,7 @@ def linovelib_search(keyword,num=5):
     desc_list = soup.find_all("p", class_="book-desc")
     author_list = soup.find_all("span", class_="book-author")
     link_list = soup.find_all("a", class_="book-layout",href=True)
-    for i in range(num):
+    for i in range(max(num,len(title_list))):
         title = title_list[i].get_text()
         desc = desc_list[i].get_text()
         author = author_list[i].get_text()
@@ -243,7 +244,15 @@ def linovelib_search(keyword,num=5):
         print("网址:","https://www.linovelib.com" + link)
         print("下载：","linovelib download",link.replace("/novel/","").replace(".html",""))
         print("--------------")
-    print("搜索结果:",len(title_list),"本")
+    print("搜索结果:",max(num,len(title_list)),"本")
+    return link_list[0]["href"].replace("/novel/","").replace(".html","")
+
+def linovelib_search_simple(keyword):
+    keyword = quote(keyword)
+    web = "https://www.linovelib.com/S0/?searchkey=" + keyword + "&searchtype=all"
+    content = requests.get(web, headers={'User-Agent': 'Mozilla/5.0 (Linux; U; Android 11; zh-cn; Redmi K30 Pro Build/RKQ1.200826.002) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/11.6 Mobile Safari/537.36 COVC/045635'})
+    soup = BeautifulSoup(content.text, "html.parser")
+    link_list = soup.find_all("a", class_="book-layout",href=True)
     return link_list[0]["href"].replace("/novel/","").replace(".html","")
 
 def change_to_id(id):
@@ -257,7 +266,7 @@ def change_to_id(id):
         elif id.count('/') == 4:
             id = id.split('/')[-1].strip(".html")
     else:
-        id = linovelib_search(id)
+        id = linovelib_search_simple(id)
     return id
 
 def linovelib_info(id):
@@ -320,3 +329,34 @@ def get_chapter_pic(web,sleep_time=1,enable_pic_download=True):
                 f.write(r.content) 
         pic_list.append(IMAGE_URL)
     return pic_list
+
+def linovelib_pic(id,wait_time=1,path=os.getcwd(),begin_chapter=0,end_chapter=0):
+    novel_catalog = "https://www.linovelib.com/novel/" + id + "/catalog"
+    catalog_list = get_chapter_list(novel_catalog)
+    book_title = get_title_book(novel_catalog)
+    if begin_chapter >= end_chapter:
+        range_time = [0,len(catalog_list)]
+    else:
+        range_time = [begin_chapter,end_chapter]
+        book_title = book_title + " " +str(begin_chapter) + "-" + str(end_chapter)
+    print("Downloading",book_title,"'s pictures...")
+    chapter_now = ""
+    dir_now = path + "/" +book_title + "/"
+    os.makedirs(dir_now,exist_ok=True)
+    for i in range(range_time[0],range_time[1]):
+        if len(catalog_list[i]) == 1:
+            chapter_now = catalog_list[i][0]
+            dir_now = path + "/" +book_title + "/" + chapter_now
+            os.makedirs(dir_now,exist_ok=True)
+            pass
+        else:
+            if catalog_list[i][0] == "插图":
+                os.chdir(dir_now)
+                print("Start getting picture from:",catalog_list[i][1])
+                try:
+                    get_chapter_pic(catalog_list[i][1],wait_time)
+                except ConnectionResetError:
+                    break
+                except:
+                    pass
+    print("Downloading",book_title,"'s picture is over.")

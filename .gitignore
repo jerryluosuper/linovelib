@@ -3,6 +3,7 @@
 *.jpg
 *.epub
 *.pdf
+*jpeg
 赤村崎葵子的分析是瞎扯淡.md
 
 # Byte-compiled / optimized / DLL files
@@ -136,3 +137,5 @@ dmypy.json
 .pyre/
 果然我的青春恋爱喜剧搞错了.md
 果然我的青春恋爱喜剧搞错了.pdf
+欢迎来到实力至上主义的教室 1-10.md
+欢迎来到实力至上主义的教室 1-20.md
