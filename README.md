@@ -121,5 +121,11 @@ linovelib search <keyword> <num>
 linovelib info <id>
 ```
 + 显示小说详细信息。
+# 特点：
++ 操作简便
++ 可自定义程度高（等待时间等等都可以设置）
++ 下载格式任意（只有你想不到和pandoc不支持，没有linovelib做不到）
++ 插图位置固定插入（markdown或其他）
++ Write with pure python
 # 参考
 https://github.com/ShunJieZhang1995/linovelib_parser
